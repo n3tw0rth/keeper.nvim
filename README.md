@@ -1,7 +1,5 @@
-<img width="1000" height="400" alt="Scrub" src="https://github.com/user-attachments/assets/a2705eb1-7602-4b02-87e2-0736c51623a4" />
 
-
-oil.nvim inspired nvim plugin to manage buffers and persists open buffers when you close nvim.
+oil.nvim inspired nvim plugin to manage buffers and persists open buffers when you close nvim. (scrub.nvim renamed to keeper.nvim)
 
 ## Features
 
@@ -12,13 +10,13 @@ oil.nvim inspired nvim plugin to manage buffers and persists open buffers when y
 
 ## Installation
 
-Install `scrub.nvim` using your preferred Neovim plugin manager:
+Install `keeper.nvim` using your preferred Neovim plugin manager:
 
 **Using Lazy.nvim**:
 
 ```lua
 return {
-    "n3tw0rth/scrub.nvim",
+    "n3tw0rth/keeper.nvim",
     config = function()
         require("scrub").setup()
     end
@@ -29,7 +27,7 @@ return {
 
 ```lua
 use {
-    "n3tw0rth/scrub.nvim",
+    "n3tw0rth/keeper.nvim",
     config = function()
         require("scrub").setup()
     end
