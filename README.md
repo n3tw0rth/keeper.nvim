@@ -37,7 +37,7 @@ use {
 **Using Vim-Plug**:
 
 ```vim
-Plug 'n3tw0rth/scrub.nvim'
+Plug 'n3tw0rth/keeper.nvim'
 ```
 
 ## Usage
