@@ -1,36 +1,54 @@
-local command = require("scrub.commands")
-local helpers = require("scrub.helpers")
-local utils   = require("scrub.utils")
+local constants = require("keeper.constants")
+local view      = require("keeper.view")
 
-local mock    = require('luassert.mock')
-local stub    = require('luassert.stub')
+---@param path string
+local open_listed = function(path)
+  local buf = vim.fn.bufadd(vim.fn.fnamemodify(path, ":p"))
+  vim.bo[buf].buflisted = true
+  return buf
+end
 
+describe("view", function()
+  before_each(function()
+    vim.cmd("silent! %bwipeout!")
+  end)
 
-describe('view module', function()
-  local testModule = require("scrub.view")
+  it("lists the open buffers, one per line, relative to the cwd", function()
+    open_listed("lua/keeper/view.lua")
+    open_listed("README.md")
 
-  describe("populate_buffer", function()
-    local buf = vim.api.nvim_create_buf(false, false)
-    stub(command, "ls").returns(
-      '33 %a   "lua/scrub/view.lua"           line 51\n' ..
-      '63  h + "spec/view_spec.lua"           line 9')
-
-    local ls = vim.split(command.ls(), '\n')
-
-    stub(helpers, "reset_buffer")
-    stub(utils, "extract_file_name_from_ls")
-        .on_call_with(ls[1]).returns("lua/scrub/view.lua")
-        .on_call_with(ls[2]).returns("spec/view_spec.lua")
-
-    testModule.populate_buffer(buf)
-
+    local buf = view.view_buffer()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    table.sort(lines)
 
-    assert.are.same({
-      "spec/view_spec.lua",
-      "lua/scrub/view.lua",
-    }, lines)
+    assert.same({ "README.md", "lua/keeper/view.lua" }, lines)
+  end)
 
-    utils.extract_file_name_from_ls:revert()
+  it("does not list the keeper buffer itself", function()
+    open_listed("README.md")
+
+    local buf = view.view_buffer()
+    -- populate again while the keeper buffer exists
+    view.populate_buffer(buf)
+
+    assert.same({ "README.md" }, vim.api.nvim_buf_get_lines(buf, 0, -1, false))
+  end)
+
+  it("is named and not modified after populating", function()
+    open_listed("README.md")
+
+    local buf = view.view_buffer()
+
+    assert.equals(constants.KEEPER_BUFFER_NAME, vim.api.nvim_buf_get_name(buf))
+    assert.is_false(vim.bo[buf].modified)
+  end)
+
+  it("reuses the existing keeper buffer instead of creating a second one", function()
+    open_listed("README.md")
+
+    local first = view.view_buffer()
+    local second = view.view_buffer()
+
+    assert.equals(first, second)
   end)
 end)

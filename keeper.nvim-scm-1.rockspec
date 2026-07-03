@@ -1,8 +1,8 @@
 rockspec_format = '3.0'
-package = "scrub.nvim"
+package = "keeper.nvim"
 version = "scm-1"
 source = {
-  url = "git+https://github.com/n3tw0rth/scrub.nvim",
+  url = "git+https://github.com/n3tw0rth/keeper.nvim",
 }
 dependencies = {
 }
@@ -12,5 +12,7 @@ test_dependencies = {
 build = {
   type = "builtin",
   copy_directories = {
+    "doc",
+    "plugin",
   },
 }
