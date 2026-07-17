@@ -1,0 +1,97 @@
+*keeper.txt*  Manage buffers by editing a list, and keep them across sessions
+
+Author:  n3tw0rth <https://github.com/n3tw0rth>
+License: MIT
+
+==============================================================================
+CONTENTS                                                     *keeper-contents*
+
+  1. Introduction ................................... |keeper-introduction|
+  2. Setup .......................................... |keeper-setup|
+  3. Configuration .................................. |keeper-configuration|
+  4. Usage .......................................... |keeper-usage|
+  5. Commands ....................................... |keeper-commands|
+  6. Mappings ....................................... |keeper-mappings|
+  7. Persistence .................................... |keeper-persistence|
+
+==============================================================================
+1. INTRODUCTION                                          *keeper-introduction*
+
+keeper.nvim is an oil.nvim inspired buffer manager. It shows the listed
+buffers as plain lines in a special buffer (`keeper://buffers`). Edit that
+list like any text — delete a line and |:write| — and the corresponding
+buffers are closed. On exit the buffer list is saved per working directory
+and restored the next time Neovim starts in that directory.
+
+==============================================================================
+2. SETUP                                                        *keeper-setup*
+
+Call the setup function from your config: >lua
+
+    require("keeper").setup()
+<
+Calling setup() is optional: when it is never called, the plugin configures
+itself with the defaults on |VimEnter|.
+
+==============================================================================
+3. CONFIGURATION                                        *keeper-configuration*
+
+setup() accepts a table with the following defaults: >lua
+
+    require("keeper").setup({
+      -- register the :Keeper command
+      enabled = true,
+
+      save_n_restore = {
+        -- save the buffer list on exit and restore it on start
+        enabled = true,
+
+        -- JSON file the buffer lists are saved to, keyed by cwd
+        save_file = vim.fn.stdpath("data") .. "/keeper/buffers.json",
+      },
+    })
+<
+==============================================================================
+4. USAGE                                                        *keeper-usage*
+
+Open the keeper buffer with |:Keeper| (a mapping like the following is
+handy): >lua
+
+    vim.keymap.set("n", "_", "<CMD>Keeper<CR>", { desc = "Open keeper" })
+<
+Inside the keeper buffer:
+
+  - Delete the lines of the buffers you want to close (for example with
+    `dd`) and run |:write|. The removed buffers are closed.
+  - Press <CR> on a line to jump to that buffer.
+  - Run |:edit| to refresh the list.
+
+When every line is removed, all listed buffers are closed and the keeper
+window is closed (or replaced with an empty buffer when it is the last
+window).
+
+==============================================================================
+5. COMMANDS                                                  *keeper-commands*
+
+:Keeper                                                              *:Keeper*
+    Open the keeper buffer showing the listed buffers, one per line.
+
+==============================================================================
+6. MAPPINGS                                                  *keeper-mappings*
+
+The following mapping is local to the keeper buffer:
+
+  <CR>    Open the buffer named on the cursor line.
+
+==============================================================================
+7. PERSISTENCE                                            *keeper-persistence*
+
+When `save_n_restore.enabled` is true, the list of open buffers is written
+to `save_n_restore.save_file` on |VimLeavePre|, keyed by the current working
+directory. On startup the buffers saved for the cwd are added back to the
+buffer list; each file is loaded lazily when it is first entered.
+
+The save file is JSON and lives under |stdpath()| "data" by default, so it
+survives reboots (unlike the `/tmp` location used by older releases).
+
+vim:tw=78:ts=8:noet:ft=help:norl:
