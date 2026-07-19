@@ -1,9 +1,10 @@
 ignore = {
   "631",    -- max_line_length
 }
-read_globals = {
+-- vim is a global with writable fields (vim.bo[buf].x = y is idiomatic)
+globals = {
   "vim",
-  "describe",
-  "it",
-  "assert"
+}
+files = {
+  spec = { std = "+busted" },
 }

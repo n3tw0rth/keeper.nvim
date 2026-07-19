@@ -1,4 +1,6 @@
 test:
-  nvim --headless -c "PlenaryBustedDirectory spec {minimal_init = './tests/minimal_init.lua', pattern = 'view_spec'}"
+  nvim --headless --noplugin -u spec/minimal_init.lua -c "PlenaryBustedDirectory spec { minimal_init = './spec/minimal_init.lua' }"
+lint:
+  luacheck lua spec
 changelog:
   git cliff -o CHANGELOG.md
