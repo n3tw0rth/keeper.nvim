@@ -10,7 +10,7 @@ describe("persist", function()
   ---@param name string
   ---@return string
   local create_file = function(name)
-    local path = tmp_dir .. "/" .. name
+    local path = vim.fn.resolve(tmp_dir .. "/" .. name)
     local file = assert(io.open(path, "w"))
     file:write("content\n")
     file:close()
