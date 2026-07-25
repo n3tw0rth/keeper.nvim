@@ -3,6 +3,11 @@ local constants = require("keeper.constants")
 
 local M = {}
 
+--- The buffer that was current before the keeper UI was opened.
+--- Used by enter_buffer() to restore the correct alternate file.
+---@type integer?
+M.pre_keeper_buf = nil
+
 ---@return integer? bufnr of the keeper buffer when it already exists
 local find_existing_buffer = function()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -18,6 +23,8 @@ end
 --- is wiped when hidden, so they are never registered twice.
 ---@return integer bufnr
 M.create_the_buffer = function()
+  M.pre_keeper_buf = vim.api.nvim_get_current_buf()
+
   local existing = find_existing_buffer()
   if existing ~= nil then
     vim.api.nvim_set_current_buf(existing)
@@ -25,11 +32,11 @@ M.create_the_buffer = function()
   end
 
   local buf = vim.api.nvim_create_buf(false, false)
+  vim.bo[buf].swapfile = false
   -- the name marks the buffer as ours, so actions never touch other buffers
   vim.api.nvim_buf_set_name(buf, constants.KEEPER_BUFFER_NAME)
   vim.bo[buf].buftype = "acwrite"
   vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].swapfile = false
 
   vim.keymap.set("n", "<CR>", function()
     require("keeper.functions").enter_buffer()
@@ -51,7 +58,7 @@ M.create_the_buffer = function()
     end,
   })
 
-  vim.api.nvim_win_set_buf(0, buf)
+  vim.cmd("keepalt call nvim_win_set_buf(0, " .. buf .. ")")
   return buf
 end
 

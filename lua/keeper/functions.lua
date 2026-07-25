@@ -16,7 +16,18 @@ M.enter_buffer = function()
 
   for _, buf in ipairs(buffers.get_listed_buffers()) do
     if buf.name == name then
-      helpers.focus_on_the_selected_buf(buf.bufnr)
+      local view = require("keeper.view")
+      local pre = view.pre_keeper_buf
+      if pre and pre ~= buf.bufnr and vim.api.nvim_buf_is_valid(pre) then
+        -- Restore the pre-keeper buffer first so it becomes the alternate
+        -- when we switch to the target.
+        vim.cmd("keepalt buffer " .. pre)
+        vim.cmd("buffer " .. buf.bufnr)
+      else
+        -- Target is the same buffer we came from; just go back with
+        -- keepalt so the original alternate is preserved.
+        vim.cmd("keepalt buffer " .. buf.bufnr)
+      end
       return
     end
   end
