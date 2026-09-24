@@ -59,6 +59,7 @@ M.create_the_buffer = function()
   })
 
   vim.cmd("keepalt call nvim_win_set_buf(0, " .. buf .. ")")
+  vim.bo[buf].filetype = "keeper"
   return buf
 end
 
