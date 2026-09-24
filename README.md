@@ -19,7 +19,7 @@ An [oil.nvim](https://github.com/stevearc/oil.nvim)-inspired buffer manager. `:K
 ## Features
 
 - **Buffers as text** — manage buffers with the motions you already know (`dd`, visual delete, …)
-- **Session persistence** — the buffer list is saved on exit, keyed by working directory, and restored on start
+- **Session persistence** — the buffer list is saved on exit, keyed by working directory, and restored on start, cursor positions included
 - **Zero-config** — works out of the box; `setup()` is optional
 - **Lightweight** — pure Lua, no dependencies
 
