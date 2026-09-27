@@ -91,6 +91,12 @@ to `save_n_restore.save_file` on |VimLeavePre|, keyed by the current working
 directory. On startup the buffers saved for the cwd are added back to the
 buffer list; each file is loaded lazily when it is first entered.
 
+The cursor position of every buffer is saved with it. When a restored
+buffer is first shown in a window, the cursor is put back where it was
+(clamped to the end of the file if it got shorter). A buffer that is
+already loaded when the list is restored, such as a file passed on the
+command line, keeps its current cursor.
+
 The save file is JSON and lives under |stdpath()| "data" by default, so it
 survives reboots (unlike the `/tmp` location used by older releases).
 

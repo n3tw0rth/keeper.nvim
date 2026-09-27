@@ -108,6 +108,90 @@ describe("persist", function()
     assert.equals(path, entries[1].file)
   end)
 
+  --- Write a save file with the given entries for the cwd.
+  ---@param entries KeeperSavedBuffer[]
+  local write_entries = function(entries)
+    vim.fn.mkdir(vim.fn.fnamemodify(save_file, ":h"), "p")
+    local file = assert(io.open(save_file, "w"))
+    file:write(vim.json.encode({ [vim.fn.getcwd()] = entries }))
+    file:close()
+  end
+
+  ---@param path string
+  ---@param lines string[]
+  local write_lines = function(path, lines)
+    local file = assert(io.open(path, "w"))
+    file:write(table.concat(lines, "\n") .. "\n")
+    file:close()
+  end
+
+  it("saves the cursor position of each buffer (#30)", function()
+    local a = create_file("a.lua")
+    local b = create_file("b.lua")
+    write_lines(a, { "one", "two", "three" })
+    write_lines(b, { "alpha", "beta" })
+
+    vim.cmd("edit " .. vim.fn.fnameescape(a))
+    vim.api.nvim_win_set_cursor(0, { 3, 2 })
+    vim.cmd("edit " .. vim.fn.fnameescape(b))
+    vim.api.nvim_win_set_cursor(0, { 2, 1 })
+
+    persist.save_buffers(config)
+
+    local saved = {}
+    for _, entry in ipairs(read_save_file()[vim.fn.getcwd()]) do
+      saved[entry.file] = { entry.line, entry.col }
+    end
+    -- a is hidden (its '" mark), b is in the current window
+    assert.same({ 3, 2 }, saved[a])
+    assert.same({ 2, 1 }, saved[b])
+  end)
+
+  it("puts the cursor back when a restored buffer is opened (#30)", function()
+    local a = create_file("a.lua")
+    write_lines(a, { "one", "two", "three" })
+    write_entries({ { file = a, line = 2, col = 1 } })
+
+    persist.restore_buffers(config)
+    vim.cmd("edit " .. vim.fn.fnameescape(a))
+
+    assert.same({ 2, 1 }, vim.api.nvim_win_get_cursor(0))
+  end)
+
+  it("clamps a restored position past the end of a file that shrank (#30)", function()
+    local a = create_file("a.lua")
+    write_lines(a, { "one", "two" })
+    write_entries({ { file = a, line = 50, col = 40 } })
+
+    persist.restore_buffers(config)
+    vim.cmd("edit " .. vim.fn.fnameescape(a))
+
+    assert.same({ 2, 2 }, vim.api.nvim_win_get_cursor(0))
+  end)
+
+  it("restores save files written before columns were saved (#30)", function()
+    local a = create_file("a.lua")
+    write_lines(a, { "one", "two", "three" })
+    write_entries({ { file = a, line = 3 } })
+
+    persist.restore_buffers(config)
+    vim.cmd("edit " .. vim.fn.fnameescape(a))
+
+    assert.same({ 3, 0 }, vim.api.nvim_win_get_cursor(0))
+  end)
+
+  it("keeps the position of a restored buffer that was never opened (#30)", function()
+    local a = create_file("a.lua")
+    write_entries({ { file = a, line = 7, col = 3 } })
+
+    persist.restore_buffers(config)
+    persist.save_buffers(config)
+
+    local entries = read_save_file()[vim.fn.getcwd()]
+    assert.equals(7, entries[1].line)
+    assert.equals(3, entries[1].col)
+  end)
+
   it("keeps the lists saved for other directories", function()
     local other_cwd_entries = { { file = "/some/other/project/file.lua", line = 3 } }
     vim.fn.mkdir(vim.fn.fnamemodify(save_file, ":h"), "p")

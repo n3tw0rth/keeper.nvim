@@ -5,7 +5,6 @@ local M = {}
 ---@class KeeperBufferInfo
 ---@field bufnr integer
 ---@field name string absolute path of the file the buffer points to
----@field lnum integer line the cursor was last on in the buffer
 
 --- Listed buffers that point to a file, excluding the keeper buffer itself.
 ---@return KeeperBufferInfo[]
@@ -13,7 +12,7 @@ M.get_listed_buffers = function()
   local buffers = {}
   for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
     if info.name ~= "" and info.name ~= constants.KEEPER_BUFFER_NAME then
-      table.insert(buffers, { bufnr = info.bufnr, name = info.name, lnum = info.lnum })
+      table.insert(buffers, { bufnr = info.bufnr, name = info.name })
     end
   end
   return buffers
